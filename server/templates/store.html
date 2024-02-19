@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .card {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 200px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <input type="text" id="searchInput" placeholder="Search..." style="margin-left: -10%;">
+        <u style="margin-left: 60%;cursor: pointer;">{{user_id}}</u> <button onclick="logOut();">Log Out</button>
+    </header>
+
+    <div class="container" id="productContainer">
+        <!-- Product cards will be dynamically added here -->
+    </div>
+
+
+    <script>
+        function logOut(){
+            fetch('/logout')
+            .then(response => {
+                // Redirect to the login page after logout
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+            //window.location.href = '/logout';
+        }
+    </script>
+    <script type="text/javascript">
+        // Sample JSON data
+        const products = JSON.parse('{{ products|tojson|safe }}');
+    </script>
+    <script>
+        
+
+        // Function to render product cards
+        function renderProducts() {
+            const container = document.getElementById('productContainer');
+            container.innerHTML = '';
+
+            for (const [productId, product] of Object.entries(products)) {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const { Name, Description, Price, DiscountedPrice } = product;
+                //const discountedPrice = Price - Discount;
+
+                card.innerHTML = `
+                    <h3>${Name}</h3>
+                    <p>${Description}</p>
+                    <p><strong>Price:</strong> $${Price}</p>
+                    <p><strong>Price after discount:</strong> $${DiscountedPrice}</p>
+                `;
+
+                container.appendChild(card);
+            }
+        }
+
+        // Initial render
+        renderProducts();
+
+        // Add search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function () {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            const filteredProducts = Object.entries(products)
+                .filter(([productId, product]) =>
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    product.description.toLowerCase().includes(searchTerm)
+                )
+                .reduce((obj, [productId, product]) => {
+                    obj[productId] = product;
+                    return obj;
+                }, {});
+
+            // Update the UI with filtered products
+            products = filteredProducts;
+            renderProducts();
+        });
+    </script>
+</body>
+</html>

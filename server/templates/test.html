@@ -1,0 +1,24 @@
+<script>
+    async function hashPassword(password) {
+    // Convert the password string to a Uint8Array
+    const encoder = new TextEncoder();
+    const passwordData = encoder.encode(password);
+
+    // Use the SubtleCrypto API to compute the SHA-256 hash
+    const hashBuffer = await crypto.subtle.digest('SHA-256', passwordData);
+
+    // Convert the hash buffer to a hexadecimal string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+    return hashHex;
+    }
+
+    // Example usage:
+    const password = "password";
+    hashPassword(password).then(hash => {
+    console.log("Hashed Password: ", hash);
+    console.log(hash == 'b6de0a2d7ec7f0a3a4561e3a854a46a5ceb39a7ba6a045c4df64770115c10ed8')
+    });
+
+</script>
